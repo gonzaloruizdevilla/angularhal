@@ -17,8 +17,12 @@ angular.module('angularhalApp')
         return isReserved(prop) ? undefined : model[prop];
       }
 
-      this.links = function (links) {
+      this.links = function () {
         return angular.copy(model._links);
+      }
+
+      this.embedded = function () {
+        return angular.copy(model._embedded);
       }
     }
 

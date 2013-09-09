@@ -65,9 +65,13 @@ describe('Service: halclient', function () {
       })
     })
 
-    //¿COMO EXPONER LOS EMBEDDED?
     describe('embedded', function (){
-
+      it('should return a copy of embedded resources', function () {
+        var embedded = model.embedded();
+        expect(embedded.foo.foo_prop).toEqual(modelData._embedded.foo.foo_prop);
+        embedded.foo.foo_prop = "new value";
+        expect(embedded.foo.foo_prop).toNotEqual(modelData._embedded.foo.foo_prop);
+      })
     })
 
 
