@@ -9,9 +9,15 @@ describe('Service: halclient', function () {
   // load the service's module
   beforeEach(module('angularhalApp'));
 
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+  });
+
   // instantiate service
-  var halclient;
-  beforeEach(inject(function (_halclient_) {
+  var halclient, $httpBackend;
+  beforeEach(inject(function (_$httpBackend_, _halclient_) {
+    $httpBackend = _$httpBackend_;
     halclient = _halclient_;
   }));
 
@@ -34,8 +40,8 @@ describe('Service: halclient', function () {
       expect(model.url()).toEqual(modelData._links.self.href);
     });
 
-    it('should be decoupled from the model data object received', function() {
-      modelData._links.self.href = "new value";
+    xit('should be decoupled from the model data object received', function() {
+      modelData._links.self.href = "new value - 1";
       expect(model.url()).toNotEqual(modelData._links.self.href);
     });
 
@@ -59,7 +65,7 @@ describe('Service: halclient', function () {
         var links1 = model.links(),
           links2 = model.links();
 
-        links1.eg.href = "new value";
+        links1.eg.href = 'new value';
 
         expect(links1.eg.href).toNotEqual(links2.eg.href);
       })
@@ -69,7 +75,7 @@ describe('Service: halclient', function () {
       it('should return a copy of embedded resources', function () {
         var embedded = model.embedded();
         expect(embedded.foo.foo_prop).toEqual(modelData._embedded.foo.foo_prop);
-        embedded.foo.foo_prop = "new value";
+        embedded.foo.foo_prop = 'new value';
         expect(embedded.foo.foo_prop).toNotEqual(modelData._embedded.foo.foo_prop);
       })
     })
@@ -77,11 +83,32 @@ describe('Service: halclient', function () {
 
     //para seguir un link del recurso
     //por defecto, peticion get ¿tiene sentido enviar con datos?
-    //genera un wrapper con los verbos http. 
+    //genera un wrapper con los verbos http.
     //el primer parámetro será lo usado en el template si es un templated, si no es el payload
     //el segundo parámetro  serán los datos que se enviarán por payload si no es template
     describe('link', function (){
 
+      it('should get a link of the model', function (rel) {
+        var link = model.link("self");
+        expect(link.href).toEqual(modelData._links.self.href);
+      });
+
+      describe('get method', function (){
+        it('should query the link href and return a new model', function (){
+          var link = model.link('self'), updatedModel;
+          $httpBackend.expectGET('/example')
+            .respond(HalModels.updated_simple_model);
+
+          link.get().then(function (model){
+            updatedModel = model;
+          });
+
+          $httpBackend.flush();
+
+          expect(updatedModel.get('prop')).toEqual('val2');
+
+        });
+      });
     })
     //
   });
