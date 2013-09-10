@@ -4,6 +4,10 @@ angular.module('angularhalApp')
   .provider('halclient', function () {
     var $http, $q;
 
+    function clone(jsonObject){
+      return JSON.parse(JSON.stringify(jsonObject));
+    }
+
     function isReserved(prop){
       return prop === "_links" || prop === "_embedded";
     }
@@ -19,7 +23,7 @@ angular.module('angularhalApp')
     }
 
     function ModelWrapper(data) {
-      var model = angular.copy(data);
+      var model = clone(data);
       this.url = function (){
         return model._links.self.href;
       }
@@ -29,17 +33,17 @@ angular.module('angularhalApp')
       }
 
       this.links = function () {
-        return angular.copy(model._links);
+        return clone(model._links);
       }
 
       this.link = function (rel){
-        var link = angular.copy(model._links[rel]);
+        var link = clone(model._links[rel]);
         link.get = get(link);
         return link;
       }
 
       this.embedded = function () {
-        return angular.copy(model._embedded);
+        return clone(model._embedded);
       }
     }
 
