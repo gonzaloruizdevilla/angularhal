@@ -12,10 +12,35 @@ angular.module('angularhalApp')
       return prop === "_links" || prop === "_embedded";
     }
 
+    function applyTemplateParams(link, templateParams) {
+      if (link.templated) {
+        return link.href.replace(/\{(.+?)\}/g, function(match, paramId) {
+            return templateParams[paramId];
+        });      
+      } else{
+        return link.href;
+      };
+    }
+
+    function addPayload(linkUrl, payload) {
+      var queryString = '';
+      if (payload) {
+        payload.forEach( function(entry) {
+          queryString += entry.name + '=' + entry.value + '&';
+        });
+        queryString = '?' + queryString.substring(0, queryString.length-1);
+      };
+      return linkUrl + queryString;
+    }
+
     function get(link){
-      return function (){
-        var defer = $q.defer();
-        $http.get(link.href).success(function (json){
+      return function (params){
+        var defer = $q.defer(), linkUrl = link.href;
+        if (params) {
+          linkUrl = applyTemplateParams(link, params.templateParams);
+          linkUrl = addPayload(linkUrl, params.payload);
+        };
+        $http.get(linkUrl).success(function (json){
           defer.resolve(new ModelWrapper(json));
         })
         return defer.promise;

@@ -6,7 +6,18 @@ HalModels.simple_model = {
 	  },
 	  eg: {
 	    href: '/boo'
-	  }
+	  },
+      orders: {
+        href : '/orders',
+      },
+      order: {
+        href : '/orders/{id}',
+        templated : true
+      },
+      orderRow: {
+        href : '/orders/{id}/rows/{rowId}',
+        templated : true
+      }
 	},
 	_embedded: {
 	  foo: {

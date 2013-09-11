@@ -93,21 +93,45 @@ describe('Service: halclient', function () {
         expect(link.href).toEqual(modelData._links.self.href);
       });
 
+      function testGetQuery(rel, expectedUrl, params) {
+        var link = model.link(rel), updatedModel;
+        $httpBackend.expectGET(expectedUrl)
+          .respond(HalModels.updated_simple_model);
+
+        link.get(params).then(function (model){
+          updatedModel = model;
+        });
+
+        $httpBackend.flush();
+
+        expect(updatedModel.get('prop')).toEqual('val2');
+      }
+
       describe('get method', function (){
         it('should query the link href and return a new model', function (){
-          var link = model.link('self'), updatedModel;
-          $httpBackend.expectGET('/example')
-            .respond(HalModels.updated_simple_model);
-
-          link.get().then(function (model){
-            updatedModel = model;
-          });
-
-          $httpBackend.flush();
-
-          expect(updatedModel.get('prop')).toEqual('val2');
-
+          testGetQuery('self', '/example');
         });
+
+        it('should ignore get\'s params.templateParams when the link is not templated', function (){
+          var params = { templateParams : { id : '1' } };
+          testGetQuery('self', '/example', params);
+        });
+
+        it('should use get\'s params.templateParams when the link is templated', function (){
+          var params = { templateParams : { id : '1' } };
+          testGetQuery('order', '/orders/1', params);
+        });
+
+        it('should use get\'s params.templateParams when the link is templated with multiple variables', function (){
+          var params = { templateParams : { id : '1' , rowId : '2' } };
+          testGetQuery('orderRow', '/orders/1/rows/2', params);
+        });
+
+        it('should use get\'s params.payload as query string', function (){
+          var params = { payload : [{ name : 'pageSize', value : '100' }, { name : 'orderBy', value : 'name' }] };
+          testGetQuery('orders', '/orders?pageSize=100&orderBy=name', params);
+        });
+
       });
     })
     //
